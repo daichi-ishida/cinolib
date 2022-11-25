@@ -313,12 +313,12 @@ void GLcanvas::draw_axis() const
     vec3d  X = O + vec3d(1,0,0)*camera.scene_radius;
     vec3d  Y = O + vec3d(0,1,0)*camera.scene_radius;
     vec3d  Z = O + vec3d(0,0,1)*camera.scene_radius;
-    double r = camera.scene_radius*0.02;
+    float  r = float(camera.scene_radius*0.02);
     glfwMakeContextCurrent(window);
     glDisable(GL_DEPTH_TEST);
-    draw_arrow(O, X, r, Color::RED(),   0.9, 0.5, 8);
-    draw_arrow(O, Y, r, Color::GREEN(), 0.9, 0.5, 8);
-    draw_arrow(O, Z, r, Color::BLUE(),  0.9, 0.5, 8);
+    draw_arrow(O, X, r, Color::RED(),   0.9f, 0.5f, 8);
+    draw_arrow(O, Y, r, Color::GREEN(), 0.9f, 0.5f, 8);
+    draw_arrow(O, Z, r, Color::BLUE(),  0.9f, 0.5f, 8);
     draw_sphere(O, r, Color::WHITE(), 1);
     glEnable(GL_DEPTH_TEST);
 }
@@ -375,9 +375,9 @@ void GLcanvas::draw_markers() const
             if(depth_cull_markers && fabs(z-z_buf[x+W*(H-y-1)])>0.01) continue;
         }
         // adjust marker size based on zoom
-        auto zoom_factor = clamp(camera.zoom_factor, 1e-5, 1e10); // avoids overflow inside ImGui radius calculation
-        uint zoom_radius = 0.5*m.disk_radius/zoom_factor;
-        uint zoom_font_s = 0.5*m.font_size/zoom_factor;
+        float zoom_factor = clamp(float(camera.zoom_factor), 1e-5f, 1e10f); // avoids overflow inside ImGui radius calculation
+        float zoom_radius = 0.5f*m.disk_radius/zoom_factor;
+        float zoom_font_s = 0.5f*m.font_size/zoom_factor;
         //
         if(m.disk_radius>0)
         {
@@ -385,7 +385,7 @@ void GLcanvas::draw_markers() const
             //  - I noticed that the automatic segment count immediately triggers overflow with large amounts of zoom,
             //    so I am always approximating circles with 20-gons
             //  - Besides, I should probably use something like AddSquare or AddRect to save limit polygon vertices....
-            drawList->AddCircleFilled(ImVec2(pos.x(),pos.y()),
+            drawList->AddCircleFilled(ImVec2(float(pos.x()),float(pos.y())),
                                       zoom_radius,
                                       ImGui::GetColorU32(ImVec4(m.color.r, m.color.g, m.color.b, m.color.a)), 20);
         }
@@ -393,7 +393,7 @@ void GLcanvas::draw_markers() const
         {
             drawList->AddText(ImGui::GetFont(),
                               zoom_font_s,
-                              ImVec2(pos.x()+zoom_radius, pos.y()-2*zoom_radius),
+                              ImVec2(float(pos.x()+zoom_radius), float(pos.y()-2*zoom_radius)),
                               ImGui::GetColorU32(ImVec4(m.color.r, m.color.g, m.color.b, m.color.a)),
                               &m.text[0],
                               &m.text[0] + m.text.size());
@@ -503,9 +503,9 @@ CINO_INLINE
 GLfloat GLcanvas::query_Z_buffer(const vec2d & p) const
 {
     glfwMakeContextCurrent(window);
-    GLint x = p.x()         * DPI_factor;
-    GLint y = p.y()         * DPI_factor;
-    GLint H = camera.height * DPI_factor;
+    GLint x = GLint(p.x()         * DPI_factor);
+    GLint y = GLint(p.y()         * DPI_factor);
+    GLint H = GLint(camera.height * DPI_factor);
     GLfloat depth;
     glReadPixels(x, H-1-y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
     return depth;
@@ -730,7 +730,10 @@ void GLcanvas::mouse_button_event(GLFWwindow *window, int button, int action, in
 
 CINO_INLINE
 void GLcanvas::cursor_event(GLFWwindow *window, double x_pos, double y_pos)
-{
+{    
+    // if visual controls claim the event, let them handle it
+    if(ImGui::GetIO().WantCaptureMouse) return;
+
     GLcanvas* v = static_cast<GLcanvas*>(glfwGetWindowUserPointer(window));
 
     if(v->callback_mouse_moved)

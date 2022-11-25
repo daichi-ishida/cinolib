@@ -586,7 +586,7 @@ CINO_INLINE
 uint AbstractMesh<M,V,E,P>::vert_valence(const uint vid) const
 {
     assert(adj_v2v(vid).size() == adj_v2e(vid).size());
-    return adj_v2v(vid).size();
+    return uint(adj_v2v(vid).size());
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -761,7 +761,7 @@ template<class M, class V, class E, class P>
 CINO_INLINE
 uint AbstractMesh<M,V,E,P>::edge_valence(const uint eid) const
 {
-    return this->adj_e2p(eid).size();
+    return uint(this->adj_e2p(eid).size());
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1134,11 +1134,11 @@ void AbstractMesh<M,V,E,P>::poly_color_wrt_label(const bool sorted, const float 
         int l = this->poly_data(pid).label;
         if(DOES_NOT_CONTAIN(l_map,l))
         {
-            uint fresh_label = l_map.size();
+            uint fresh_label = uint(l_map.size());
             l_map[l] = fresh_label;
         }
     }
-    uint n_labels = l_map.size();
+    uint n_labels = uint(l_map.size());
     for(uint pid=0; pid<this->num_polys(); ++pid)
     {
         if(sorted) this->poly_data(pid).color = Color::hsv_ramp(n_labels, this->poly_data(pid).label);
@@ -1156,7 +1156,7 @@ void AbstractMesh<M,V,E,P>::poly_label_wrt_color()
     for(uint pid=0; pid<this->num_polys(); ++pid)
     {
         const Color & c = this->poly_data(pid).color;
-        if (DOES_NOT_CONTAIN(colormap,c)) colormap[c] = colormap.size();
+        if(DOES_NOT_CONTAIN(colormap,c)) colormap[c] = int(colormap.size());
     }
     for(uint pid=0; pid<this->num_polys(); ++pid)
     {
@@ -1180,7 +1180,7 @@ template<class M, class V, class E, class P>
 CINO_INLINE
 uint AbstractMesh<M,V,E,P>::polys_n_unique_colors() const
 {
-    return vector_poly_unique_colors().size();
+    return uint(vector_poly_unique_colors().size());
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1189,7 +1189,7 @@ template<class M, class V, class E, class P>
 CINO_INLINE
 uint AbstractMesh<M,V,E,P>::polys_n_unique_labels() const
 {
-    return vector_poly_unique_labels().size();
+    return uint(vector_poly_unique_labels().size());
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

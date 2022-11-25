@@ -1,10 +1,10 @@
-#include <cinolib/gl/glcanvas.h>
-#include <cinolib/gl/surface_mesh_controls.h>
-#include <cinolib/meshes/meshes.h>
 #include <cinolib/homotopy_basis.h>
 #include <cinolib/canonical_polygonal_schema.h>
 #include <cinolib/polycube.h>
 #include <cinolib/drawable_segment_soup.h>
+#include <cinolib/meshes/meshes.h>
+#include <cinolib/gl/glcanvas.h>
+#include <cinolib/gl/surface_mesh_controls.h>
 
 int main(int argc, char **argv)
 {
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
                 uint v1 = obj.edge_vert_id(eid,1);
                 int loop_id = obj.vert_data(v0).label;
                 if(loop_id<0) loop_id = obj.vert_data(v1).label;
-                Color c = Color::scatter(data.loops.size(),loop_id,1,1);
+                Color c = Color::scatter(uint(data.loops.size()),loop_id,1.f,1.f);
                 obj_loops.push_seg(obj.vert(v0),obj.vert(v1),c);
                 cps_edges.push_seg(cps.vert(v0),cps.vert(v1),c);
             }
@@ -62,13 +62,13 @@ int main(int argc, char **argv)
 
     GLcanvas gui_obj;
     GLcanvas gui_cps;
-    obj.show_texture2D(TEXTURE_2D_CHECKERBOARD, 1);
+    obj.show_texture2D(TEXTURE_2D_CHECKERBOARD, 1.f);
     obj.show_marked_edge(false);
     obj.show_wireframe(false);
     obj.updateGL();
     gui_obj.push(&obj);
     gui_obj.push(&obj_loops);
-    cps.show_texture2D(TEXTURE_2D_CHECKERBOARD, 1);
+    cps.show_texture2D(TEXTURE_2D_CHECKERBOARD, 1.f);
     cps.show_marked_edge(false);
     cps.show_wireframe(false);
     cps.updateGL();

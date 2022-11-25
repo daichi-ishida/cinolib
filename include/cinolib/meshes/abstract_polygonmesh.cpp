@@ -161,9 +161,9 @@ void AbstractPolygonMesh<M,V,E,P>::init(const std::vector<vec3d>             & v
     std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
 
     // pre-allocate memory
-    uint nv = verts.size();
-    uint np = polys.size();
-    uint ne = 1.5*np;
+    uint nv = uint(verts.size());
+    uint np = uint(polys.size());
+    uint ne = uint(1.5*np);
     this->verts.reserve(nv);
     this->edges.reserve(ne*2);
     this->polys.reserve(np);
@@ -429,7 +429,7 @@ template<class M, class V, class E, class P>
 CINO_INLINE
 int AbstractPolygonMesh<M,V,E,P>::genus() const
 {
-    return (2-Euler_characteristic())*0.5;
+    return int((2-Euler_characteristic())*0.5);
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -738,41 +738,50 @@ bool AbstractPolygonMesh<M,V,E,P>::vert_is_boundary(const uint vid) const
 
 template<class M, class V, class E, class P>
 CINO_INLINE
+bool AbstractPolygonMesh<M,V,E,P>::mesh_is_manifold() const
+{
+    for(uint vid=0; vid<this->num_verts(); ++vid)
+    {
+        if(!this->vert_is_manifold(vid)) return false;
+    }
+    return true;
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class P>
+CINO_INLINE
 bool AbstractPolygonMesh<M,V,E,P>::vert_is_manifold(const uint vid) const
 {
+    if(this->vert_valence(vid)==0) return true;
+
+    // if the vertex is incident to a non manifold edge, then it's not manifold
     for(uint eid : this->adj_v2e(vid))
     {
         if(!this->edge_is_manifold(eid)) return false;
     }
 
-    std::vector<uint> e_link = this->vert_edges_link(vid);
-    std::unordered_set<uint> edge_set(e_link.begin(), e_link.end());
-
-    std::queue<uint> q;
-    q.push(e_link.front());
-
-    std::unordered_set<uint> visited;
-    visited.insert(e_link.front());
-
-    while(!q.empty())
+    // verify whether all the incident polys can be reached with a surface flooding...
+    std::queue<uint> front;
+    front.push(this->adj_v2p(vid).front());
+    std::set<uint> visited;
+    while(!front.empty())
     {
-        uint curr = q.front();
-        q.pop();
+        uint pid = front.front();
+        front.pop();
 
-        assert(CONTAINS(visited, curr));
-
-        for(uint nbr : this->adj_e2e(curr))
+        visited.insert(pid);
+        for(uint nbr : this->adj_p2p(pid))
         {
-            // still in the link of vid, but not visited yet
-            if(CONTAINS(edge_set, nbr) && !CONTAINS(visited, nbr))
+            if(this->poly_contains_vert(nbr,vid) && DOES_NOT_CONTAIN(visited,nbr))
             {
+                front.push(nbr);
                 visited.insert(nbr);
-                q.push(nbr);
             }
         }
     }
-
-    return (visited.size() == e_link.size());
+    //std::cout << visited.size() << " " << this->adj_v2p(vid).size() << std::endl;
+    return (visited.size() == this->adj_v2p(vid).size());
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

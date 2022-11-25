@@ -20,7 +20,7 @@ int main(int, char **)
     gui_2d.push(&m_2d);
     gui_3d.push(&m_3d);
 
-    float radius = 0.02;
+    float radius = 0.02f;
 
     // update 2d and 3d Poisson sampling based on current parameters
     auto compute_samples = [&]()
@@ -47,7 +47,7 @@ int main(int, char **)
 
     gui_2d.callback_app_controls = [&]()
     {
-        ImGui::SliderFloat("Radius", &radius, 0.001, 0.1);
+        ImGui::SliderFloat("Radius", &radius, 0.001f, 0.1f);
         if(ImGui::SmallButton("Compute Samples"))
         {
             compute_samples();

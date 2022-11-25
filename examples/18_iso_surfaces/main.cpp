@@ -18,22 +18,22 @@ int main(int argc, char **argv)
     gui.push(&m);
 
     MeshSlicer ss;
-    ss.Z_thresh = 0.5;
+    ss.Z_thresh = 0.5f;
     ss.slice(m);
     m.updateGL();
 
-    float iso_val = 0.5;
+    float iso_val = 0.5f;
     DrawableIsosurface<> iso(m, iso_val);
     gui.push(&iso, false);
 
     Profiler profiler;
     gui.callback_app_controls = [&]()
     {
-        if(ImGui::SliderFloat("iso", &iso_val, 0.0, 1.0))
+        if(ImGui::SliderFloat("iso", &iso_val, 0.f, 1.f))
         {
             iso = DrawableIsosurface<>(m,iso_val);
         }
-        if(ImGui::SliderFloat("slice", &ss.Z_thresh, 0, 1))
+        if(ImGui::SliderFloat("slice", &ss.Z_thresh, 0.f, 1.f))
         {
             ss.slice(m);
             m.updateGL();

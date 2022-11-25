@@ -4,7 +4,7 @@ This folder contains a number of sample programs that illustrate the core functi
 cd examples
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -Dcinolib_DIR=<absolute-path-to-cinolib>
+cmake .. -DCMAKE_BUILD_TYPE=Release
 make
 ```
 Cmake will automatically detect and download the necessary external libraries (e.g. [Triangle](https://www.cs.cmu.edu/~quake/triangle.html), [Tetgen](http://wias-berlin.de/software/index.jsp?id=TetGen&lang=1)). You can selectively enable/disable external dependencies directly from the `CMakeLists.txt` file. At the end of the process, all the executables will be positioned in the newly generated `bin` folder.
@@ -133,6 +133,12 @@ Cmake will automatically detect and download the necessary external libraries (e
 [<p align="left"><img src="snapshots/42_connected_components.png" width="500"></p>](https://github.com/mlivesu/cinolib/tree/master/examples/42_connected_components)
 
 #### 43 - Convert a hexhedral mesh into a conforming tetrahedral mesh (command line tool)
+
+#### 44 - Voxelize a volume decribed by a general polygonal mesh
+[<p align="left"><img src="snapshots/44_voxelize_mesh.png" width="500"></p>](https://github.com/mlivesu/cinolib/tree/master/examples/44_voxelize_mesh)
+
+#### 45 - Voxelize an analytic function
+[<p align="left"><img src="snapshots/45_voxelize_function.png" width="500"></p>](https://github.com/mlivesu/cinolib/tree/master/examples/45_voxelize_function)
 
 
 

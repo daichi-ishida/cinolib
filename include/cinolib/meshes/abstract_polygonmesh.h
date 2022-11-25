@@ -96,7 +96,7 @@ class AbstractPolygonMesh : public AbstractMesh<M,V,E,P>
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-        uint verts_per_poly(const uint pid) const override { return this->polys.at(pid).size(); }
+        uint verts_per_poly(const uint pid) const override { return uint(this->polys.at(pid).size()); }
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -115,8 +115,9 @@ class AbstractPolygonMesh : public AbstractMesh<M,V,E,P>
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-        double mesh_volume() const;
-        double mesh_area()   const;
+        double mesh_volume()      const;
+        double mesh_area()        const;
+        bool   mesh_is_manifold() const;
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

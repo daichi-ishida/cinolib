@@ -15,6 +15,14 @@ target_include_directories(cinolib INTERFACE $<BUILD_INTERFACE:${cinolib_DIR}/ex
 # https://cliutils.gitlab.io/modern-cmake/chapters/features/cpp11.html
 target_compile_features(cinolib INTERFACE cxx_std_11)
 
+if(MSVC)
+    # suppress MSVC's unsafe warning C4996
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    # necessary for using strdup without warnings
+    # https://stackoverflow.com/questions/7582394/strdup-or-strdup
+    add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # OPTIONAL MODULES ::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -125,7 +133,7 @@ endif()
 
 if(CINOLIB_USES_VTK)
     message("CINOLIB OPTIONAL MODULE: VTK")
-    find_package(VTK COMPONENTS IOGeometry IOImport IOExport)
+    find_package(VTK OPTIONAL_COMPONENTS IOGeometry IOImport IOExport)
     if(VTK_FOUND)
         # https://vtk.org/doc/nightly/html/md__builds_gitlab-kitware-sciviz-ci_Documentation_Doxygen_ModuleMigration.html
         target_link_libraries(cinolib INTERFACE VTK::IOGeometry VTK::IOImport VTK::IOExport)

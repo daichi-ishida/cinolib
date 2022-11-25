@@ -77,10 +77,10 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::init(const std::vector<vec3d>           
     std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
 
     // pre-allocate memory
-    uint nv = verts.size();
-    uint nf = faces.size();
-    uint np = polys.size();
-    uint ne = 1.5*nf;
+    uint nv = uint(verts.size());
+    uint nf = uint(faces.size());
+    uint np = uint(polys.size());
+    uint ne = uint(1.5*nf);
     this->verts.reserve(nv);
     this->edges.reserve(ne*2);
     this->faces.reserve(nf);
@@ -131,8 +131,8 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::init(const std::vector<vec3d>           
     std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
 
     // pre-allocate memory
-    uint nv = verts.size();
-    uint np = polys.size();
+    uint nv = uint(verts.size());
+    uint np = uint(polys.size());
     this->verts.reserve(nv);
     this->polys.reserve(np);
     this->v2v.reserve(nv);
@@ -441,21 +441,21 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::update_p_quality(const uint pid)
 {
     if(this->poly_is_tetrahedron(pid))
     {
-        this->poly_data(pid).quality = tet_scaled_jacobian(this->poly_vert(pid,0),
-                                                           this->poly_vert(pid,1),
-                                                           this->poly_vert(pid,2),
-                                                           this->poly_vert(pid,3));
+        this->poly_data(pid).quality = float(tet_scaled_jacobian(this->poly_vert(pid,0),
+                                                                 this->poly_vert(pid,1),
+                                                                 this->poly_vert(pid,2),
+                                                                 this->poly_vert(pid,3)));
     }
     else if(this->poly_is_hexahedron(pid))
     {
-        this->poly_data(pid).quality = hex_scaled_jacobian(this->poly_vert(pid,0),
-                                                           this->poly_vert(pid,1),
-                                                           this->poly_vert(pid,2),
-                                                           this->poly_vert(pid,3),
-                                                           this->poly_vert(pid,4),
-                                                           this->poly_vert(pid,5),
-                                                           this->poly_vert(pid,6),
-                                                           this->poly_vert(pid,7));
+        this->poly_data(pid).quality = float(hex_scaled_jacobian(this->poly_vert(pid,0),
+                                                                 this->poly_vert(pid,1),
+                                                                 this->poly_vert(pid,2),
+                                                                 this->poly_vert(pid,3),
+                                                                 this->poly_vert(pid,4),
+                                                                 this->poly_vert(pid,5),
+                                                                 this->poly_vert(pid,6),
+                                                                 this->poly_vert(pid,7)));
     }
 }
 
@@ -1437,6 +1437,7 @@ uint AbstractPolyhedralMesh<M,V,E,F,P>::face_shared_edge(const uint fid0, const 
         if (this->face_contains_edge(fid1, eid)) return eid;
     }
     assert(false);
+    return 0; // warning killer
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1870,7 +1871,7 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::vert_ordered_srf_one_ring(const uint    
         uint v1 = this->vert_opposite_to(e1,vid);
         if(!this->face_verts_are_CCW(f0,v1,v0))
         {
-            uint last = e_ring.size()-1;
+            uint last = uint(e_ring.size())-1;
             REVERSE_VEC(e_ring);
             REVERSE_VEC(f_ring);
             std::rotate(e_ring.begin(), e_ring.begin()+last, e_ring.end());
@@ -3023,7 +3024,7 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::poly_export_element(const uint          
             auto it = v_map.find(vid);
             if(it==v_map.end())
             {
-                uint fresh_id = verts.size();
+                uint fresh_id = uint(verts.size());
                 v_map[vid] = fresh_id;
                 verts.push_back(this->vert(vid));
                 f.push_back(fresh_id);

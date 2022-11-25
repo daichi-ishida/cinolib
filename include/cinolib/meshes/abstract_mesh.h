@@ -133,13 +133,13 @@ class AbstractMesh
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
         virtual uint verts_per_poly(const uint pid) const = 0;
-        virtual uint edges_per_poly(const uint pid) const { return this->p2e.at(pid).size(); }
+        virtual uint edges_per_poly(const uint pid) const { return uint(this->p2e.at(pid).size()); }
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-        uint num_verts() const { return verts.size();     }
-        uint num_edges() const { return edges.size() / 2; }
-        uint num_polys() const { return polys.size();     }
+        uint num_verts() const { return uint(verts.size());   }
+        uint num_edges() const { return uint(edges.size()/2); }
+        uint num_polys() const { return uint(polys.size());   }
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

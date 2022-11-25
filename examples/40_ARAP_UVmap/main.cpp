@@ -1,8 +1,8 @@
 #include <cinolib/meshes/meshes.h>
-#include <cinolib/gl/glcanvas.h>
 #include <cinolib/ARAP_2D_map.h>
-#include <cinolib/gl/load_texture.h>
 #include <cinolib/profiler.h>
+#include <cinolib/gl/load_texture.h>
+#include <cinolib/gl/glcanvas.h>
 #include <cinolib/gl/surface_mesh_controls.h>
 
 int main(int argc, char **argv)
@@ -14,8 +14,8 @@ int main(int argc, char **argv)
     std::string s = (argc==2) ? std::string(argv[1]) : std::string(DATA_PATH) + "/maxFace.obj";
     DrawableTrimesh<> m_xyz(s.c_str());
     m_xyz.show_wireframe(true);
-    m_xyz.show_wireframe_transparency(0.2);
-    m_xyz.show_texture2D(TEXTURE_2D_CHECKERBOARD, 0.005);
+    m_xyz.show_wireframe_transparency(0.2f);
+    m_xyz.show_texture2D(TEXTURE_2D_CHECKERBOARD, 0.005f);
     SurfaceMeshControls<DrawableTrimesh<>> menu_xyz(&m_xyz, &gui_xyz, "OBJ space");
     gui_xyz.push(&m_xyz);
     gui_xyz.push(&menu_xyz);
@@ -35,8 +35,8 @@ int main(int argc, char **argv)
     m_uvw.normalize_bbox();
     m_uvw.update_normals();
     m_uvw.show_wireframe(true);
-    m_uvw.show_wireframe_transparency(0.2);
-    m_uvw.show_texture2D(TEXTURE_2D_CHECKERBOARD, 0.005);
+    m_uvw.show_wireframe_transparency(0.2f);
+    m_uvw.show_texture2D(TEXTURE_2D_CHECKERBOARD, 0.005f);
     gui_uvw.push(&m_uvw);
     m_uvw.updateGL();
     SurfaceMeshControls<DrawableTrimesh<>> menu_uvw(&m_uvw, &gui_xyz, "UV space");
