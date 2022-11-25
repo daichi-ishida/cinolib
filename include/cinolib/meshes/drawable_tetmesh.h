@@ -89,6 +89,15 @@ class DrawableTetmesh : public AbstractDrawablePolyhedralMesh<Tetmesh<M,V,E,F,P>
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+        explicit DrawableTetmesh(const std::vector<vec3d>              & verts,
+                                 const std::vector<std::vector<uint>>  & polys)
+        : Tetmesh<M,V,E,F,P>(verts, polys)
+        {
+            this->init_drawable_stuff();
+        }
+
+        //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
         explicit DrawableTetmesh(const std::vector<double> & coords,
                                  const std::vector<uint>   & polys)
         : Tetmesh<M,V,E,F,P>(coords, polys)
