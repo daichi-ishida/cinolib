@@ -138,6 +138,7 @@ class AbstractPolyhedralMesh : public AbstractMesh<M,V,E,P>
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
         const std::vector<std::vector<uint>> & vector_faces() const { return faces; }
+        const std::vector<std::vector<bool>> & vector_polys_face_winding() const { return polys_face_winding; }
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
