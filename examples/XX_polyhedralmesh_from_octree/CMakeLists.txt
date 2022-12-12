@@ -1,0 +1,5 @@
+project(polyhedralmesh_from_octree)
+
+add_executable(${PROJECT_NAME} main.cpp)
+
+target_link_libraries(${PROJECT_NAME} cinolib)
