@@ -142,6 +142,7 @@ void Polyhedralmesh<M,V,E,F,P>::save(const char * filename) const
     else if(filetype.compare("VTU")==0 || filetype.compare("vtu")==0)
     {
         write_polyhedron_VTU(filename, this->verts, this->faces, this->polys);
+    }
     else if(filetype.compare("ovm") == 0 ||
             filetype.compare("OVM") == 0)
     {
