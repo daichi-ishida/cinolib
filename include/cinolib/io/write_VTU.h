@@ -45,6 +45,14 @@ namespace cinolib
 {
 
 CINO_INLINE
+void write_polyhedron_VTU(const char                           * filename,
+                          const std::vector<vec3d>             & verts,
+                          const std::vector<std::vector<uint>> & faces,
+                          const std::vector<std::vector<uint>> & polys);
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+CINO_INLINE
 void write_VTU(const char                * filename,
                const std::vector<double> & xyz,
                const std::vector<uint>   & tets,

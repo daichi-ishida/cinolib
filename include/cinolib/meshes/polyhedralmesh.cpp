@@ -131,12 +131,16 @@ CINO_INLINE
 void Polyhedralmesh<M,V,E,F,P>::save(const char * filename) const
 {
     std::string str(filename);
-    std::string filetype = str.substr(str.size()-6,6);
+    std::string filetype = "." + get_file_extension(str);
 
     if (filetype.compare(".hedra") == 0 ||
         filetype.compare(".HEDRA") == 0)
     {
         write_HEDRA(filename, this->verts, this->faces, this->polys, this->polys_face_winding);
+    }
+    else if(filetype.compare(".VTU")==0 || filetype.compare(".vtu")==0)
+    {
+        write_polyhedron_VTU(filename, this->verts, this->faces, this->polys);
     }
     else
     {

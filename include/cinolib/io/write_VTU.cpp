@@ -51,6 +51,51 @@ namespace cinolib
 #ifdef CINOLIB_USES_VTK
 
 CINO_INLINE
+void write_polyhedron_VTU(const char                           * filename,
+                          const std::vector<vec3d>             & verts,
+                          const std::vector<std::vector<uint>> & faces,
+                          const std::vector<std::vector<uint>> & polys)
+{
+    setlocale(LC_NUMERIC, "en_US.UTF-8"); // makes sure "." is the decimal separator
+    vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer   = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+    vtkSmartPointer<vtkUnstructuredGrid>          grid     = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    vtkSmartPointer<vtkPoints>                    points   = vtkSmartPointer<vtkPoints>::New();
+
+    for(const vec3d & v : verts)
+    {
+        points->InsertNextPoint(v.x(), v.y(), v.z());
+    }
+
+    for(auto p : polys) // for each polyhedron
+    {
+        vtkSmartPointer<vtkIdList> face_ids = vtkSmartPointer<vtkIdList>::New();
+        face_ids->InsertNextId(p.size());
+        for(uint fid : p) // for each face
+        {
+            auto face = faces[fid];
+            face_ids->InsertNextId(face.size());
+            for(uint i : face) // for each point index
+            {
+                face_ids->InsertNextId(i);
+            }
+        }
+        grid->InsertNextCell(VTK_POLYHEDRON, face_ids);
+    }
+
+    grid->SetPoints(points);
+
+#if VTK_MAJOR_VERSION < 6
+    writer->SetInput( grid );
+#else
+    writer->SetInputData(grid);
+#endif
+    writer->SetFileName(filename);
+    writer->Write();
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+CINO_INLINE
 void write_VTU(const char                           * filename,
                const std::vector<vec3d>             & verts,
                const std::vector<std::vector<uint>> & polys)
