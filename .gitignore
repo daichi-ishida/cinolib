@@ -5,6 +5,6 @@ external/eigen/.hgeol
 external/graph_cut/
 examples/build*
 *.DS_Store
-examples/bin/*
+examples/bin*
 
 examples/CMakeLists.txt.user

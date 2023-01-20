@@ -4,17 +4,7 @@
     "cmake.buildDirectory": "${workspaceFolder}/examples/build",
     "cmake.configureSettings": {
         "CMAKE_PREFIX_PATH": [
-            "${workspaceFolder}",
             "C:/dev/vtk/lib/cmake/vtk-9.2"
         ],
-    },
-    "files.associations": {
-        "charconv": "cpp",
-        "ios": "cpp",
-        "istream": "cpp",
-        "ostream": "cpp",
-        "xstring": "cpp",
-        "xutility": "cpp",
-        "nonlinearoptimization": "cpp"
     }
 }
