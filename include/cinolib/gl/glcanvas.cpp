@@ -567,7 +567,11 @@ CINO_INLINE
 void GLcanvas::key_event(GLFWwindow *window, int key, int /*scancode*/, int action, int modifiers)
 {
     // if visual controls claim the event, let them handle it!
-    if(ImGui::GetIO().WantCaptureKeyboard) return;
+    if(ImGui::GetIO().WantCaptureKeyboard)
+    {
+        if(action==GLFW_RELEASE) ImGui::GetIO().AddInputCharacter(key);
+        return;
+    }
 
     // handle repeated keys as if they were a sequence of single key press events
     if(action==GLFW_PRESS || action==GLFW_REPEAT)
@@ -783,7 +787,11 @@ void GLcanvas::scroll_event(GLFWwindow *window, double x_offset, double y_offset
     GLcanvas* v = static_cast<GLcanvas*>(glfwGetWindowUserPointer(window));
 
     // if visual controls claim the event, let them handle it
-    if(ImGui::GetIO().WantCaptureMouse) return;
+    if(ImGui::GetIO().WantCaptureMouse)
+    {
+        ImGui_ImplGlfw_ScrollCallback(window, x_offset, y_offset);
+        return;
+    }
 
     if(v->callback_mouse_scroll)
     {

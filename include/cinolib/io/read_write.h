@@ -62,6 +62,7 @@
 #include <cinolib/io/write_TET.h>
 #include <cinolib/io/write_VTU.h>
 #include <cinolib/io/write_VTK.h>
+#include <cinolib/io/write_OVM.h>
 
 
 // SKELETON READERS
