@@ -231,6 +231,18 @@ void write_VTU(const char                * filename,
 #else
 
 CINO_INLINE
+void write_polyhedron_VTU(const char                           *,
+                          const std::vector<vec3d>             &,
+                          const std::vector<std::vector<uint>> &,
+                          const std::vector<std::vector<uint>> &)
+{
+    std::cerr << "ERROR : VTK missing. Install VTK and recompile defining symbol CINOLIB_USES_VTK" << std::endl;
+    exit(-1);
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+CINO_INLINE
 void write_VTU(const char                *,
                const std::vector<double> &,
                const std::vector<uint>   &,
