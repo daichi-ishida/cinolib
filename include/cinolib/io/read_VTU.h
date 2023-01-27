@@ -45,6 +45,24 @@
 namespace cinolib
 {
 
+struct cinoHash
+{
+    CINO_INLINE
+    std::size_t operator()(const cinolib::vec3d& v) const;
+};
+
+struct faceEqualTo
+{
+    CINO_INLINE
+    bool operator()(const std::vector<uint>& lhs, const std::vector<uint>& rhs) const;
+};
+
+struct faceHash
+{
+    CINO_INLINE
+    std::size_t operator()(const std::vector<uint>& face) const;
+};
+
 CINO_INLINE
 void read_VTU(const char          * filename,
                std::vector<double> & xyz,
@@ -66,6 +84,15 @@ void read_VTU(const char                      * filename,
                std::vector<vec3d>             & verts,
                std::vector<std::vector<uint>> & poly);
 
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+CINO_INLINE
+void read_VTU(const char                      * filename,
+               std::vector<vec3d>             & verts,
+               std::vector<std::vector<uint>> & faces,
+               std::vector<std::vector<uint>> & polys,
+               std::vector<std::vector<bool>> & windings);
 }
 
 #ifndef  CINO_STATIC_LIB
