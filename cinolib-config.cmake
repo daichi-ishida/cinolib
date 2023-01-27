@@ -38,6 +38,7 @@ option(CINOLIB_USES_INDIRECT_PREDICATES "Use Indirect Predicates"    OFF)
 option(CINOLIB_USES_GRAPH_CUT           "Use Graph Cut"              OFF)
 option(CINOLIB_USES_BOOST               "Use Boost"                  OFF)
 option(CINOLIB_USES_VTK                 "Use VTK"                    OFF)
+option(CINOLIB_USES_SPECTRA             "Use Spectra"                OFF)
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -146,3 +147,17 @@ if(CINOLIB_USES_VTK)
 endif()
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+if(CINOLIB_USES_SPECTRA)
+    message("CINOLIB OPTIONAL MODULE: Spectra")
+    FetchContent_Declare(spectra GIT_REPOSITORY "https://github.com/yixuan/spectra.git")
+    FetchContent_Populate(spectra)
+    if(MSVC)
+        # because Spectra seems to trigger fatal error C1128 on MSVC
+        # https://learn.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/fatal-error-c1128?view=msvc-170
+        add_compile_options(/bigobj)
+    endif()
+    target_compile_definitions(cinolib INTERFACE CINOLIB_USES_SPECTRA)
+    target_include_directories(cinolib INTERFACE ${spectra_SOURCE_DIR}/include)
+endif()
+

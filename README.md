@@ -61,6 +61,7 @@ Valid options are:
 * `CINOLIB_USES_GRAPH_CUT`, used for graph clustering
 * `CINOLIB_USES_BOOST`, used for 2D polygon operations (e.g. thickening, clipping, 2D booleans...)
 * `CINOLIB_USES_VTK`, used just to support VTK file formats
+* `CINOLIB_USES_SPECTRA`, used for matrix eigendecomposition
 
 ## GUI
 CinoLib is designed for researchers in computer graphics and geometry processing that need to quickly realize software prototypes that demonstate a novel algorithm or technique. In this context a simple OpenGL window and a side bar containing a few buttons and sliders are often more than enough. The library uses [ImGui](https://github.com/ocornut/imgui) for the GUI and [GLFW](https://www.glfw.org) for OpenGL rendering. Typical visual controls for the rendering of a mesh (e.g. shading, wireframe, texturing, planar slicing, ecc) are all encoded in two classes `cinolib::SurfaceMeshControls` and `cinolib::VolumeMeshControls`, that operate on surface and volume meshes respectively. To add a side bar that displays all such controls one can modify the sample progam above as follows:
@@ -144,6 +145,6 @@ BibTeX entry:
 
 ## Acknowledgment
 The software collected in CinoLib spans across a large period of time, starting from the beginning of my PhD to today. Since 2015, this work has been partly supported by various research projects, such as
-* [CAxMan](https://cordis.europa.eu/project/id/680448)
+* [ProMED](http://arm.mi.imati.cnr.it/imati/detail_pages.php?language=ENG&view=GEN&voice_code=PRG&fcode=WHA&ref_idk=PJ-176)
 * [CHANGE](https://cordis.europa.eu/project/rcn/204834/en)
-
+* [CAxMan](https://cordis.europa.eu/project/id/680448)
