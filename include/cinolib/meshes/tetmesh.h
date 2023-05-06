@@ -107,6 +107,7 @@ class Tetmesh : public AbstractPolyhedralMesh<M,V,E,F,P>
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
         bool   edge_flip                        (const uint eid); // 3-to-2 flip
+        uint   edge_split                       (const uint eid, const uint split_point);
         uint   edge_split                       (const uint eid, const vec3d & p);
         uint   edge_split                       (const uint eid, const double lambda = 0.5); // use linear interpolation: e0*(1-lambda) + e1*lambda
         int    edge_collapse                    (const uint eid, const double lambda = 0.5, const double topologic_check = true, const double geometric_check = true);
@@ -144,6 +145,8 @@ class Tetmesh : public AbstractPolyhedralMesh<M,V,E,F,P>
         uint              poly_split            (const uint pid, const std::vector<double> & bc = { 0.25, 0.25, 0.25, 0.25 });
         uint              poly_split            (const uint pid, const uint vid);
         void              polys_split           (const std::vector<uint> & pids);
+        void              poly_local_frame      (const uint pid, const uint origin, mat3d & xyz);
+
 
         using AbstractPolyhedralMesh<M,V,E,F,P>::poly_id;  // avoid hiding poly_id(flist)
 

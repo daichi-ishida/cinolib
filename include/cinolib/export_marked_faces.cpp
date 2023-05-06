@@ -33,89 +33,78 @@
 *     16149 Genoa,                                                              *
 *     Italy                                                                     *
 *********************************************************************************/
-#include <cinolib/linear_map.h>
-#include <cinolib/tangent_space.h>
+#include <cinolib/export_marked_faces.h>
+#include <cinolib/meshes/polygonmesh.h>
 
 namespace cinolib
 {
 
+template<class M, class V, class E, class F, class P>
 CINO_INLINE
-void linear_map(const double u0[2],
-                const double v0[2],
-                const double u1[2],
-                const double v1[2],
-                      double T[2][2])
+void export_marked_faces(const AbstractPolyhedralMesh<M,V,E,F,P> & m,
+                               AbstractPolygonMesh<M,V,E,F>      & srf)
 {
-    // compute the transformation as T = |u1 v1| * |u0 v0|^-1
-
-    double uv0[2][2] = {{u0[0],v0[0]}, {u0[1],v0[1]}};
-    double uv1[2][2] = {{u1[0],v1[0]}, {u1[1],v1[1]}};
-    double inv[2][2];
-    mat_inverse<2,double>(uv0,inv);
-    mat_times<2,2,2,double>(uv1,inv,T);
+    std::unordered_map<uint,uint> m2srf_vmap, srf2m_vmap;
+    export_marked_faces(m, srf, m2srf_vmap, srf2m_vmap);
 }
+
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+template<class M, class V, class E, class F, class P>
 CINO_INLINE
-void linear_map(const vec2d & u0,
-                const vec2d & v0,
-                const vec2d & u1,
-                const vec2d & v1,
-                      mat2d & T)
+void export_marked_faces(const AbstractPolyhedralMesh<M,V,E,F,P> & m,
+                               AbstractPolygonMesh<M,V,E,F>      & srf,
+                               std::unordered_map<uint,uint>     & m2srf_vmap,
+                               std::unordered_map<uint,uint>     & srf2m_vmap)
 {
-    // compute the transformation as T = |u1 v1| * |u0 v0|^-1
+    m2srf_vmap.clear();
+    srf2m_vmap.clear();
 
-    mat2d uv0({u0[0],v0[0], u0[1],v0[1]});
-    mat2d uv1({u1[0],v1[0], u1[1],v1[1]});
+    std::vector<vec3d>             verts;
+    std::vector<std::vector<uint>> polys;
 
-    T = uv1 * uv0.inverse();
+    uint fresh_id = 0;
+
+    for(uint fid=0; fid<m.num_faces(); ++fid)
+    {
+        if(m.face_data(fid).flags[MARKED])
+        {
+            std::vector<uint> p;
+            for(uint off=0; off<m.verts_per_face(fid); ++off)
+            {
+                uint vid   = m.face_vert_id(fid,off);
+                uint vsrf  = fresh_id++;
+
+                auto query = m2srf_vmap.find(vid);
+                if (query == m2srf_vmap.end())
+                {
+                    verts.push_back(m.vert(vid));
+
+                    m2srf_vmap[vid] = vsrf;
+                    srf2m_vmap[vsrf] = vid;
+                }
+                else
+                {
+                    vsrf = query->second;
+                    --fresh_id;
+                }
+
+                p.push_back(vsrf);
+            }
+            polys.push_back(p);
+        }
+    }
+
+    switch(m.mesh_type())
+    {
+        case TETMESH        : srf = Trimesh<M,V,E,F>(verts, polys);     break;
+        case HEXMESH        : srf = Quadmesh<M,V,E,F>(verts, polys);    break;
+        case POLYHEDRALMESH : srf = Polygonmesh<M,V,E,F>(verts, polys); break;
+        default             : assert(false);
+    }
 }
 
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-CINO_INLINE
-void linear_map(const vec3d & a0,
-                const vec3d & a1,
-                const vec3d & a2,
-                const vec3d & b0,
-                const vec3d & b1,
-                const vec3d & b2,
-                      mat2d & T)
-{
-    // compute 2D coordinates in tangent space
-    vec2d A0,A1,A2;
-    vec2d B0,B1,B2;
-    tangent_space_2d_coords(a0,a1,a2,A0,A1,A2);
-    tangent_space_2d_coords(b0,b1,b2,B0,B1,B2);
-
-    // compute 2D frames in tangent space
-    vec2d u0 = A1 - A0;
-    vec2d v0 = A2 - A0;
-    vec2d u1 = B1 - B0;
-    vec2d v1 = B2 - B0;
-
-    // solve for the mapping
-    linear_map(u0,v0,u1,v1,T);
-}
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// Computes the linear component of the affine map that connects tetrahedra (a0,a1,a2,a3) and (b0,b1,b2,b3)
-CINO_INLINE
-void linear_map(const vec3d & a0,
-                const vec3d & a1,
-                const vec3d & a2,
-                const vec3d & a3,
-                const vec3d & b0,
-                const vec3d & b1,
-                const vec3d & b2,
-                const vec3d & b3,
-                      mat3d & T)
-{
-    mat3d f0({a1-a0, a2-a0, a3-a0});
-    mat3d f1({b1-b0, b2-b0, b3-b0});
-    T = f1*f0.inverse();
-}
 
 }
+
