@@ -61,6 +61,8 @@ void write_polyhedron_VTU(const char                           * filename,
     vtkSmartPointer<vtkUnstructuredGrid>          grid     = vtkSmartPointer<vtkUnstructuredGrid>::New();
     vtkSmartPointer<vtkPoints>                    points   = vtkSmartPointer<vtkPoints>::New();
 
+    points->SetDataTypeToDouble();
+
     for(const vec3d & v : verts)
     {
         points->InsertNextPoint(v.x(), v.y(), v.z());
@@ -105,6 +107,8 @@ void write_VTU(const char                           * filename,
     vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
     vtkSmartPointer<vtkUnstructuredGrid>          grid   = vtkSmartPointer<vtkUnstructuredGrid>::New();
     vtkSmartPointer<vtkPoints>                    points = vtkSmartPointer<vtkPoints>::New();
+
+    points->SetDataTypeToDouble();
 
     // generate some arrays that allow each element type to be viewed alone by thresholding
     //
@@ -176,6 +180,8 @@ void write_VTU(const char                * filename,
     vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
     vtkSmartPointer<vtkUnstructuredGrid>          grid   = vtkSmartPointer<vtkUnstructuredGrid>::New();
     vtkSmartPointer<vtkPoints>                    points = vtkSmartPointer<vtkPoints>::New();
+
+    points->SetDataTypeToDouble();
 
     // generate some arrays that allow each element type to be viewed alone by thresholding
     //
