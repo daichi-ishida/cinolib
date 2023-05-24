@@ -85,6 +85,112 @@ namespace cinolib
 CINO_INLINE
 void triangle_wrap(const std::vector<double> & coords_in,
                    const std::vector<uint>   & segs_in,
+                   const std::vector<int>    & segs_marker_in,
+                   const std::vector<double> & holes_in,
+                   const std::string         & flags,
+                         std::vector<double> & coords_out,
+                         std::vector<uint>   & tris_out,
+                         std::vector<uint>   & segs_out,
+                         std::vector<int>    & segs_marker_out)
+{
+    coords_out.clear();
+    tris_out.clear();
+    segs_out.clear();
+    segs_marker_out.clear();
+
+    triangulateio in, out;
+
+    assert(!coords_in.empty());
+
+    in.numberofpoints = int(coords_in.size()/2);
+    in.pointlist      = (double*)calloc(coords_in.size(),sizeof(double));
+    for(int vid=0; vid<in.numberofpoints; ++vid)
+    {
+        in.pointlist[vid*2  ] = coords_in.at(vid*2  );
+        in.pointlist[vid*2+1] = coords_in.at(vid*2+1);
+    }
+    in.numberofpointattributes = 0;
+    in.pointmarkerlist         = (int*)calloc(in.numberofpoints,sizeof(int));
+    for(int vid=0; vid<in.numberofpoints; ++vid)
+    {
+       in.pointmarkerlist[vid] = 1;
+    }
+
+    in.numberoftriangles          = 0;
+    in.numberofcorners            = 0;
+    in.numberoftriangleattributes = 0;
+    in.trianglelist               = NULL;
+    in.triangleattributelist      = NULL;
+
+    in.numberofsegments = int(segs_in.size()/2);
+    in.segmentlist      = (int*)calloc(segs_in.size(),sizeof(int));
+    in.segmentmarkerlist = (int*)calloc(segs_in.size()/2,sizeof(int));
+
+    for(uint i=0; i<segs_in.size()/2; ++i)
+    {
+        in.segmentlist[2*i+0] = static_cast<int>(segs_in[2*i+0]);
+        in.segmentlist[2*i+1] = static_cast<int>(segs_in[2*i+1]);
+        in.segmentmarkerlist[i] = segs_marker_in[i];
+    }
+
+
+    in.numberofholes = int(holes_in.size()/2);
+    in.holelist      = (double*)calloc(holes_in.size(),sizeof(double));
+    for(int hid=0; hid<in.numberofholes; ++hid)
+    {
+        in.holelist[hid*2  ] = holes_in.at(hid*2  );
+        in.holelist[hid*2+1] = holes_in.at(hid*2+1);
+    }
+    in.numberofregions = 0;
+
+    out.pointlist         = NULL;
+    out.pointmarkerlist   = NULL;
+    out.trianglelist      = NULL;
+    out.segmentlist       = NULL;
+    out.segmentmarkerlist = NULL;
+
+    std::string s = flags + "pz";
+
+    triangulate(const_cast<char*>(s.c_str()), &in, &out, NULL);
+
+    coords_out.reserve(out.numberofpoints*2);
+    for(int vid=0; vid<out.numberofpoints; ++vid)
+    {
+        coords_out.push_back(out.pointlist[vid*2  ]);
+        coords_out.push_back(out.pointlist[vid*2+1]);
+    }
+
+    tris_out.reserve(out.numberoftriangles * 3);
+    for(int tid=0; tid<out.numberoftriangles; ++tid)
+    {
+        tris_out.push_back(out.trianglelist[tid*3  ]);
+        tris_out.push_back(out.trianglelist[tid*3+1]);
+        tris_out.push_back(out.trianglelist[tid*3+2]);
+    }
+
+    segs_out.reserve(out.numberofsegments * 2);
+    segs_marker_out.reserve(out.numberofsegments);
+    for(int eid=0; eid<out.numberofsegments; ++eid)
+    {
+        segs_out.push_back(out.segmentlist[eid*2+0]);
+        segs_out.push_back(out.segmentlist[eid*2+1]);
+        segs_marker_out.push_back(out.segmentmarkerlist[eid]);
+    }
+
+    free(in.pointlist);
+    free(in.pointmarkerlist);
+    free(in.segmentlist);
+    free(in.segmentmarkerlist);
+    free(in.holelist);
+    free(out.pointlist);
+    free(out.trianglelist);
+    free(out.segmentlist);
+    free(out.segmentmarkerlist);
+}
+
+CINO_INLINE
+void triangle_wrap(const std::vector<double> & coords_in,
+                   const std::vector<uint>   & segs_in,
                    const std::vector<double> & holes_in,
                    const std::string         & flags,
                          std::vector<double> & coords_out,
@@ -169,6 +275,20 @@ void triangle_wrap(const std::vector<double> & coords_in,
 CINO_INLINE
 void triangle_wrap(const std::vector<double> & /*coords_in*/,
                    const std::vector<uint>   & /*segs_in*/,
+                   const std::vector<int>    & /*segs_marker_in*/,
+                   const std::vector<double> & /*holes_in*/,
+                   const std::string         & /*flags*/,
+                         std::vector<double> & /*coords_out*/,
+                         std::vector<uint>   & /*tris_out*/,
+                         std::vector<uint>   & /*segs_out*/,
+                         std::vector<int>    & /*segs_marker_out*/)
+{
+    std::cerr << "ERROR : Triangle missing. Install Triangle and recompile defining symbol CINOLIB_USES_TRIANGLE" << std::endl;
+    exit(-1);
+}
+CINO_INLINE
+void triangle_wrap(const std::vector<double> & /*coords_in*/,
+                   const std::vector<uint>   & /*segs_in*/,
                    const std::vector<double> & /*holes_in*/,
                    const std::string         & /*flags*/,
                          std::vector<double> & /*coords_out*/,
@@ -184,6 +304,22 @@ void triangle_wrap(const std::vector<double> & /*coords_in*/,
 CINO_INLINE
 void triangle_wrap(const std::vector<vec2d> & verts_in,
                    const std::vector<uint>  & segs_in,
+                   const std::vector<int>   & segs_marker_in,
+                   const std::vector<vec2d> & holes_in,
+                   const std::string        & flags,
+                         std::vector<vec2d> & verts_out,
+                         std::vector<uint>  & tris_out,
+                         std::vector<uint>  & segs_out,
+                         std::vector<int>   & segs_marker_out)
+{
+    std::vector<double> tmp;
+    triangle_wrap(serialized_xy_from_vec2d(verts_in), segs_in, segs_marker_in, serialized_xy_from_vec2d(holes_in), flags, tmp, tris_out, segs_out, segs_marker_out);
+    verts_out = vec2d_from_serialized_xy(tmp);
+}
+
+CINO_INLINE
+void triangle_wrap(const std::vector<vec2d> & verts_in,
+                   const std::vector<uint>  & segs_in,
                    const std::vector<vec2d> & holes_in,
                    const std::string        & flags,
                          std::vector<vec2d> & verts_out,
@@ -195,6 +331,23 @@ void triangle_wrap(const std::vector<vec2d> & verts_in,
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+CINO_INLINE
+void triangle_wrap(const std::vector<double> & coords_in,       // serialized input xy coordinates
+                   const std::vector<uint>   & segs_in,         // serialized input segments
+                   const std::vector<int>    & segs_marker_in,  // serialized input segment markers
+                   const std::vector<double> & holes_in,        // serialized xy holes
+                   const double                z_coord,         // lift triangulation to z_coord
+                   const std::string         & flags,           // https://www.cs.cmu.edu/~quake/triangle.switch.html
+                         std::vector<double> & coords_out,      // serialized output xy+z_coord coordinates
+                         std::vector<uint>   & tris_out,        // serialized tris
+                         std::vector<uint>   & segs_out,        // serialized output segments
+                         std::vector<int>    & segs_marker_out) // serialized output segment markers
+{
+    std::vector<double> tmp;
+    triangle_wrap(coords_in, segs_in, segs_marker_in, holes_in, flags, tmp, tris_out, segs_out, segs_marker_out);
+    coords_out = serialized_xyz_from_serialized_xy(tmp, z_coord);
+}
 
 CINO_INLINE
 void triangle_wrap(const std::vector<double> & coords_in,  // serialized input xy coordinates
@@ -213,14 +366,31 @@ void triangle_wrap(const std::vector<double> & coords_in,  // serialized input x
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 CINO_INLINE
-void triangle_wrap(const std::vector<vec2d>  & verts_in,  // serialized input xy coordinates
-                   const std::vector<uint>   & segs_in,    // serialized segments
-                   const std::vector<vec2d>  & holes_in,   // serialized xy holes
-                   const double                z_coord,    // lift triangulation to z_coord
-                   const std::string         & flags,      // https://www.cs.cmu.edu/~quake/triangle.switch.html
-                         std::vector<vec3d>  & verts_out, // serialized output xy+z_coord coordinates
-                         std::vector<uint>   & tris_out)   // serialized tris
+void triangle_wrap(const std::vector<vec2d>  & verts_in,        // serialized input xy coordinates
+                   const std::vector<uint>   & segs_in,         // serialized input segments
+                   const std::vector<int>    & segs_marker_in,  // serialized input segment markers
+                   const std::vector<vec2d>  & holes_in,        // serialized xy holes
+                   const double                z_coord,         // lift triangulation to z_coord
+                   const std::string         & flags,           // https://www.cs.cmu.edu/~quake/triangle.switch.html
+                         std::vector<vec3d>  & verts_out,       // serialized output xy+z_coord coordinates
+                         std::vector<uint>   & tris_out,        // serialized tris
+                         std::vector<uint>   & segs_out,        // serialized output segments
+                         std::vector<int>    & segs_marker_out) // serialized output segment markers
+{
+    std::vector<double> tmp;
+    triangle_wrap(serialized_xy_from_vec2d(verts_in), segs_in, segs_marker_in, 
+                  serialized_xy_from_vec2d(holes_in), flags, tmp, tris_out, segs_out, segs_marker_out);
+    verts_out = vec3d_from_serialized_xy(tmp, z_coord);
+}
 
+CINO_INLINE
+void triangle_wrap(const std::vector<vec2d>  & verts_in,  // serialized input xy coordinates
+                   const std::vector<uint>   & segs_in,   // serialized segments
+                   const std::vector<vec2d>  & holes_in,  // serialized xy holes
+                   const double                z_coord,   // lift triangulation to z_coord
+                   const std::string         & flags,     // https://www.cs.cmu.edu/~quake/triangle.switch.html
+                         std::vector<vec3d>  & verts_out, // serialized output xy+z_coord coordinates
+                         std::vector<uint>   & tris_out)  // serialized tris
 {
     std::vector<double> tmp;
     triangle_wrap(serialized_xy_from_vec2d(verts_in), segs_in,
@@ -232,13 +402,40 @@ void triangle_wrap(const std::vector<vec2d>  & verts_in,  // serialized input xy
 
 template<class M, class V, class E, class P>
 CINO_INLINE
+void triangle_wrap(const std::vector<double> & coords_in,      // serialized input xy coordinates
+                   const std::vector<uint>   & segs_in,        // serialized input segments
+                   const std::vector<int>    & segs_marker_in, // serialized input segment markers
+                   const std::vector<double> & holes_in,       // serialized xy holes
+                   const double                z_coord,        // lift triangulation to z_coord
+                   const std::string         & flags,          // https://www.cs.cmu.edu/~quake/triangle.switch.html
+                         Trimesh<M,V,E,P>    & m)
+{
+    std::vector<double> v;
+    std::vector<uint>   t;
+    std::vector<uint>   segs_out;
+    std::vector<int>    markers;
+    triangle_wrap(coords_in, segs_in, segs_marker_in, holes_in, flags, v, t, segs_out, markers);
+    m = Trimesh<M,V,E,P>(vec3d_from_serialized_xy(v,z_coord), t);
+
+    for(int sid = 0; sid < markers.size(); ++sid)
+    {
+        uint vid0 = segs_out[sid*2+0];
+        uint vid1 = segs_out[sid*2+1];
+
+        int eid = m.edge_id(vid0, vid1);
+        if(eid<0) continue;
+        m.edge_data(eid).label = markers[sid];
+    }
+}
+
+template<class M, class V, class E, class P>
+CINO_INLINE
 void triangle_wrap(const std::vector<double> & coords_in, // serialized input xy coordinates
                    const std::vector<uint>   & segs_in,   // serialized segments
                    const std::vector<double> & holes_in,  // serialized xy holes
                    const double                z_coord,   // lift triangulation to z_coord
                    const std::string         & flags,     // https://www.cs.cmu.edu/~quake/triangle.switch.html
                          Trimesh<M,V,E,P>    & m)
-
 {
     std::vector<double> v;
     std::vector<uint>   t;
@@ -247,6 +444,35 @@ void triangle_wrap(const std::vector<double> & coords_in, // serialized input xy
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class P>
+CINO_INLINE
+void triangle_wrap(const std::vector<vec2d> & verts_in,
+                   const std::vector<uint>  & segs_in,        // serialized segments
+                   const std::vector<int>   & segs_marker_in, // serialized input segment markers
+                   const std::vector<vec2d> & holes_in,
+                   const double               z_coord,        // lift triangulation to z_coord
+                   const std::string        & flags,          // https://www.cs.cmu.edu/~quake/triangle.switch.html
+                         Trimesh<M,V,E,P>   & m)
+{
+    std::vector<double> v;
+    std::vector<uint>   t;
+    std::vector<uint>   segs_out;
+    std::vector<int>    markers;
+    triangle_wrap(serialized_xy_from_vec2d(verts_in), segs_in, segs_marker_in,
+                  serialized_xy_from_vec2d(holes_in), flags, v, t, segs_out, markers);
+    m = Trimesh<M,V,E,P>(vec3d_from_serialized_xy(v,z_coord), t);
+
+    for(int sid = 0; sid < markers.size(); ++sid)
+    {
+        uint vid0 = segs_out[sid*2+0];
+        uint vid1 = segs_out[sid*2+1];
+
+        int eid = m.edge_id(vid0, vid1);
+        if(eid<0) continue;
+        m.edge_data(eid).label = markers[sid];
+    }
+}
 
 template<class M, class V, class E, class P>
 CINO_INLINE
@@ -265,6 +491,42 @@ void triangle_wrap(const std::vector<vec2d> & verts_in,
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class P>
+CINO_INLINE
+void triangle_wrap(const std::vector<vec3d> & verts_in,
+                   const std::vector<uint>  & segs_in,        // serialized segments
+                   const std::vector<int>   & segs_marker_in, // serialized input segment markers
+                   const std::vector<vec3d> & holes_in,
+                   const double               z_coord,        // lift triangulation to z_coord
+                   const std::string        & flags,          // https://www.cs.cmu.edu/~quake/triangle.switch.html
+                         Trimesh<M,V,E,P>   & m)
+{
+    std::vector<double> v;
+    std::vector<uint>   t;
+    std::vector<uint>   segs_out;
+    std::vector<int>    markers;
+    triangle_wrap(serialized_xy_from_vec3d(verts_in), segs_in, segs_marker_in,
+                  serialized_xy_from_vec3d(holes_in), flags, v, t, segs_out, markers);
+    m = Trimesh<M,V,E,P>(vec3d_from_serialized_xy(v,z_coord), t);
+
+    for(int sid = 0; sid < markers.size(); ++sid)
+    {
+        uint vid0 = segs_out[sid*2+0];
+        uint vid1 = segs_out[sid*2+1];
+
+        int eid = m.edge_id(vid0, vid1);
+        if(eid<0)
+        {
+            m.edge_data(eid).label = 0;
+        }
+        else
+        {
+            assert(markers[sid]>0);
+            m.edge_data(eid).label = markers[sid];
+        }
+    }
+}
 
 template<class M, class V, class E, class P>
 CINO_INLINE
