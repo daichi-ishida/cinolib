@@ -130,7 +130,7 @@ void triangle_wrap(const std::vector<double> & coords_in,
     {
         in.segmentlist[2*i+0] = static_cast<int>(segs_in[2*i+0]);
         in.segmentlist[2*i+1] = static_cast<int>(segs_in[2*i+1]);
-        in.segmentmarkerlist[i] = segs_marker_in[i];
+        in.segmentmarkerlist[i] = segs_marker_in[i]+1;
     }
 
 
@@ -174,7 +174,7 @@ void triangle_wrap(const std::vector<double> & coords_in,
     {
         segs_out.push_back(out.segmentlist[eid*2+0]);
         segs_out.push_back(out.segmentlist[eid*2+1]);
-        segs_marker_out.push_back(out.segmentmarkerlist[eid]);
+        segs_marker_out.push_back(out.segmentmarkerlist[eid]-1);
     }
 
     free(in.pointlist);
@@ -516,15 +516,8 @@ void triangle_wrap(const std::vector<vec3d> & verts_in,
         uint vid1 = segs_out[sid*2+1];
 
         int eid = m.edge_id(vid0, vid1);
-        if(eid<0)
-        {
-            m.edge_data(eid).label = 0;
-        }
-        else
-        {
-            assert(markers[sid]>0);
-            m.edge_data(eid).label = markers[sid];
-        }
+        if(eid<0) continue;
+        m.edge_data(eid).label = markers[sid];
     }
 }
 
