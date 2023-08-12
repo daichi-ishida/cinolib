@@ -1,6 +1,6 @@
 /********************************************************************************
 *  This file is part of CinoLib                                                 *
-*  Copyright(C) 2016: Marco Livesu                                              *
+*  Copyright(C) 2023: Marco Livesu                                              *
 *                                                                               *
 *  The MIT License                                                              *
 *                                                                               *
@@ -33,76 +33,51 @@
 *     16149 Genoa,                                                              *
 *     Italy                                                                     *
 *********************************************************************************/
-#ifndef CINO_TETRAHEDRON_UTILS_H
-#define CINO_TETRAHEDRON_UTILS_H
-
-#include <cinolib/geometry/vec_mat.h>
+#include <cinolib/AFM/flip_checks.h>
+#include <cinolib/AFM/rationals.h>
+#include <cinolib/predicates.h>
 
 namespace cinolib
 {
 
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 CINO_INLINE
-void tet_barycentric_coords(const vec3d & A,
-                            const vec3d & B,
-                            const vec3d & C,
-                            const vec3d & D,
-                            const vec3d & P,
-                            double wgts[]);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// radius of the biggest inscribed sphere
-CINO_INLINE
-double tetrahedron_inradius(const vec3d & A,
-                            const vec3d & B,
-                            const vec3d & C,
-                            const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// radius of the smallest outscribed sphere
-CINO_INLINE
-double tetrahedron_outradius(const vec3d & A,
-                             const vec3d & B,
-                             const vec3d & C,
-                             const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// normalized ratio between in and out radii
-CINO_INLINE
-double tetrahedron_radius_ratio(const vec3d & A,
-                                const vec3d & B,
-                                const vec3d & C,
-                                const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// center of the smallest outscribed sphere
-CINO_INLINE
-vec3d tetrahedron_circumcenter(const vec3d & A,
-                               const vec3d & B,
-                               const vec3d & C,
-                               const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// Given a point P and a tetrahedron ABCD, finds the point in ABCD that
-// is closest to P. This code was taken directly from Ericson's seminal
-// book "Real Time Collision Detection", Section 5.1.6
-//
-CINO_INLINE
-vec3d tetrahedron_closest_point(const vec3d & P,
-                                const vec3d & A,
-                                const vec3d & B,
-                                const vec3d & C,
-                                const vec3d & D);
+bool flipped(AFM_data & data,
+             const uint a,
+             const uint b,
+             const uint c)
+{
+    return orient2d(&data.exact_coords[3*a],
+                    &data.exact_coords[3*b],
+                    &data.exact_coords[3*c]) <= 0;
 }
 
-#ifndef  CINO_STATIC_LIB
-#include "tetrahedron_utils.cpp"
-#endif
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-#endif // CINO_TETRAHEDRON_UTILS_H
+CINO_INLINE
+bool flipped(AFM_data & data, const uint pid, const bool use_rationals)
+{
+    if(use_rationals)
+    {
+        return orient2d(&data.exact_coords[3*data.m1.poly_vert_id(pid,0)],
+                        &data.exact_coords[3*data.m1.poly_vert_id(pid,1)],
+                        &data.exact_coords[3*data.m1.poly_vert_id(pid,2)]) <= 0;
+    }
+    return orient2d(data.m1.poly_vert(pid,0).ptr(),
+                    data.m1.poly_vert(pid,1).ptr(),
+                    data.m1.poly_vert(pid,2).ptr()) <= 0;
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+CINO_INLINE
+uint count_flipped(AFM_data & data, const bool use_rationals)
+{
+    uint count = 0;
+    for(uint pid=0; pid<data.m1.num_polys(); ++pid)
+    {
+        if(flipped(data,pid,use_rationals)) ++count;
+    }
+    return count;
+}
+
+}

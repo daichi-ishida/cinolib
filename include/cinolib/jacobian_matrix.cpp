@@ -1,6 +1,6 @@
 /********************************************************************************
 *  This file is part of CinoLib                                                 *
-*  Copyright(C) 2016: Marco Livesu                                              *
+*  Copyright(C) 2023: Marco Livesu                                              *
 *                                                                               *
 *  The MIT License                                                              *
 *                                                                               *
@@ -33,76 +33,87 @@
 *     16149 Genoa,                                                              *
 *     Italy                                                                     *
 *********************************************************************************/
-#ifndef CINO_TETRAHEDRON_UTILS_H
-#define CINO_TETRAHEDRON_UTILS_H
-
-#include <cinolib/geometry/vec_mat.h>
+#include <cinolib/jacobian_matrix.h>
+#include <cinolib/tangent_space.h>
 
 namespace cinolib
 {
 
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 CINO_INLINE
-void tet_barycentric_coords(const vec3d & A,
-                            const vec3d & B,
-                            const vec3d & C,
-                            const vec3d & D,
-                            const vec3d & P,
-                            double wgts[]);
+void jacobian_matrix(const double u0[2],
+                     const double v0[2],
+                     const double u1[2],
+                     const double v1[2],
+                           double T[2][2])
+{
+    // compute the transformation as T = |u1 v1| * |u0 v0|^-1
 
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// radius of the biggest inscribed sphere
-CINO_INLINE
-double tetrahedron_inradius(const vec3d & A,
-                            const vec3d & B,
-                            const vec3d & C,
-                            const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// radius of the smallest outscribed sphere
-CINO_INLINE
-double tetrahedron_outradius(const vec3d & A,
-                             const vec3d & B,
-                             const vec3d & C,
-                             const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// normalized ratio between in and out radii
-CINO_INLINE
-double tetrahedron_radius_ratio(const vec3d & A,
-                                const vec3d & B,
-                                const vec3d & C,
-                                const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// center of the smallest outscribed sphere
-CINO_INLINE
-vec3d tetrahedron_circumcenter(const vec3d & A,
-                               const vec3d & B,
-                               const vec3d & C,
-                               const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// Given a point P and a tetrahedron ABCD, finds the point in ABCD that
-// is closest to P. This code was taken directly from Ericson's seminal
-// book "Real Time Collision Detection", Section 5.1.6
-//
-CINO_INLINE
-vec3d tetrahedron_closest_point(const vec3d & P,
-                                const vec3d & A,
-                                const vec3d & B,
-                                const vec3d & C,
-                                const vec3d & D);
+    double uv0[2][2] = {{u0[0],v0[0]}, {u0[1],v0[1]}};
+    double uv1[2][2] = {{u1[0],v1[0]}, {u1[1],v1[1]}};
+    double inv[2][2];
+    mat_inverse<2,double>(uv0,inv);
+    mat_times<2,2,2,double>(uv1,inv,T);
 }
 
-#ifndef  CINO_STATIC_LIB
-#include "tetrahedron_utils.cpp"
-#endif
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-#endif // CINO_TETRAHEDRON_UTILS_H
+CINO_INLINE
+void jacobian_matrix(const vec2d & u0,
+                     const vec2d & v0,
+                     const vec2d & u1,
+                     const vec2d & v1,
+                           mat2d & T)
+{
+    // compute the transformation as T = |u1 v1| * |u0 v0|^-1
+
+    mat2d uv0({u0[0],v0[0], u0[1],v0[1]});
+    mat2d uv1({u1[0],v1[0], u1[1],v1[1]});
+
+    T = uv1 * uv0.inverse();
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+CINO_INLINE
+void jacobian_matrix(const vec3d & a0,
+                     const vec3d & a1,
+                     const vec3d & a2,
+                     const vec3d & b0,
+                     const vec3d & b1,
+                     const vec3d & b2,
+                           mat2d & T)
+{
+    // compute 2D coordinates in tangent space
+    vec2d A0,A1,A2;
+    vec2d B0,B1,B2;
+    tangent_space_2d_coords(a0,a1,a2,A0,A1,A2);
+    tangent_space_2d_coords(b0,b1,b2,B0,B1,B2);
+
+    // compute 2D frames in tangent space
+    vec2d u0 = A1 - A0;
+    vec2d v0 = A2 - A0;
+    vec2d u1 = B1 - B0;
+    vec2d v1 = B2 - B0;
+
+    jacobian_matrix(u0,v0,u1,v1,T);
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+CINO_INLINE
+void jacobian_matrix(const vec3d & a0,
+                     const vec3d & a1,
+                     const vec3d & a2,
+                     const vec3d & a3,
+                     const vec3d & b0,
+                     const vec3d & b1,
+                     const vec3d & b2,
+                     const vec3d & b3,
+                           mat3d & T)
+{
+    mat3d f0({a1-a0, a2-a0, a3-a0});
+    mat3d f1({b1-b0, b2-b0, b3-b0});
+    T = f1*f0.inverse();
+}
+
+}

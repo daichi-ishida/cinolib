@@ -1,6 +1,6 @@
 /********************************************************************************
 *  This file is part of CinoLib                                                 *
-*  Copyright(C) 2016: Marco Livesu                                              *
+*  Copyright(C) 2023: Marco Livesu                                              *
 *                                                                               *
 *  The MIT License                                                              *
 *                                                                               *
@@ -33,76 +33,22 @@
 *     16149 Genoa,                                                              *
 *     Italy                                                                     *
 *********************************************************************************/
-#ifndef CINO_TETRAHEDRON_UTILS_H
-#define CINO_TETRAHEDRON_UTILS_H
-
-#include <cinolib/geometry/vec_mat.h>
+#include <cinolib/tutte.h>
+#include <cinolib/geometry/n_sided_poygon.h>
+#include <cinolib/harmonic_map.h>
 
 namespace cinolib
 {
 
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
+template<class M, class V, class E, class P>
 CINO_INLINE
-void tet_barycentric_coords(const vec3d & A,
-                            const vec3d & B,
-                            const vec3d & C,
-                            const vec3d & D,
-                            const vec3d & P,
-                            double wgts[]);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// radius of the biggest inscribed sphere
-CINO_INLINE
-double tetrahedron_inradius(const vec3d & A,
-                            const vec3d & B,
-                            const vec3d & C,
-                            const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// radius of the smallest outscribed sphere
-CINO_INLINE
-double tetrahedron_outradius(const vec3d & A,
-                             const vec3d & B,
-                             const vec3d & C,
-                             const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// normalized ratio between in and out radii
-CINO_INLINE
-double tetrahedron_radius_ratio(const vec3d & A,
-                                const vec3d & B,
-                                const vec3d & C,
-                                const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// center of the smallest outscribed sphere
-CINO_INLINE
-vec3d tetrahedron_circumcenter(const vec3d & A,
-                               const vec3d & B,
-                               const vec3d & C,
-                               const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// Given a point P and a tetrahedron ABCD, finds the point in ABCD that
-// is closest to P. This code was taken directly from Ericson's seminal
-// book "Real Time Collision Detection", Section 5.1.6
-//
-CINO_INLINE
-vec3d tetrahedron_closest_point(const vec3d & P,
-                                const vec3d & A,
-                                const vec3d & B,
-                                const vec3d & C,
-                                const vec3d & D);
+void Tutte(Trimesh<M,V,E,P> & m, const int polygon_type)
+{
+    std::vector<uint>    bd   = m.get_ordered_boundary_vertices();
+    std::vector<vec3d>   poly = n_sided_polygon(bd.size(), polygon_type);
+    std::map<uint,vec3d> bc;
+    for(uint i=0; i<bd.size(); ++i) bc[bd[i]] = poly[i];
+    m.vector_verts() = harmonic_map_3d(m, bc, 1, UNIFORM);
 }
 
-#ifndef  CINO_STATIC_LIB
-#include "tetrahedron_utils.cpp"
-#endif
-
-#endif // CINO_TETRAHEDRON_UTILS_H
+}

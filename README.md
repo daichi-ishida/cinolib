@@ -62,6 +62,7 @@ Valid options are:
 * `CINOLIB_USES_BOOST`, used for 2D polygon operations (e.g. thickening, clipping, 2D booleans...)
 * `CINOLIB_USES_VTK`, used just to support VTK file formats
 * `CINOLIB_USES_SPECTRA`, used for matrix eigendecomposition
+* `CINOLIB_USES_CGAL`, used for rational numbers with a lazy kernel
 
 ## GUI
 CinoLib is designed for researchers in computer graphics and geometry processing that need to quickly realize software prototypes that demonstate a novel algorithm or technique. In this context a simple OpenGL window and a side bar containing a few buttons and sliders are often more than enough. The library uses [ImGui](https://github.com/ocornut/imgui) for the GUI and [GLFW](https://www.glfw.org) for OpenGL rendering. Typical visual controls for the rendering of a mesh (e.g. shading, wireframe, texturing, planar slicing, ecc) are all encoded in two classes `cinolib::SurfaceMeshControls` and `cinolib::VolumeMeshControls`, that operate on surface and volume meshes respectively. To add a side bar that displays all such controls one can modify the sample progam above as follows:
@@ -125,7 +126,7 @@ The full list of callbacks exposed by `GLcanvas` to interact with user events (e
 A tutorial with detailed info on how to use the library is under developement. In the meanwhile, you can explore the [**examples**](https://github.com/mlivesu/cinolib/tree/master/examples#examples)  folder, which contains a constantly growing number of sample projects that showcase the core features of the library, and will be the backbone of the forthcoming tutorial.
 
 ## Contributors
-Marco Livesu is the creator and lead developer of the library. Over the years various friends and colleagues have helped me to improve the codebase, either submitting code or helping me to spot and fix bugs. A big thanks goes to: Claudio Mancinelli (University of Genoa), Daniela Cabiddu (CNR IMATI), Chrystiano Araújo (UBC), Thomas Alderighi (CNR ISTI), Fabrizio Corda (University of Cagliari), Gianmarco Cherchi (University of Cagliari) and Tommaso Sorgente (CNR IMATI)
+Marco Livesu is the creator and lead developer of the library. CinoLib has also received contributions from: Daniela Cabiddu (CNR IMATI), Claudio Mancinelli (University of Genoa), Chrystiano Araújo (UBC), Thomas Alderighi (CNR ISTI), Fabrizio Corda (University of Cagliari), Gianmarco Cherchi (University of Cagliari) and Tommaso Sorgente (CNR IMATI).
 
 ## Citing us
 If you use CinoLib in your academic projects, please consider citing the library using the following 

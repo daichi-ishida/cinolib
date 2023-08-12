@@ -1,6 +1,6 @@
 /********************************************************************************
 *  This file is part of CinoLib                                                 *
-*  Copyright(C) 2016: Marco Livesu                                              *
+*  Copyright(C) 2023: Marco Livesu                                              *
 *                                                                               *
 *  The MIT License                                                              *
 *                                                                               *
@@ -33,76 +33,89 @@
 *     16149 Genoa,                                                              *
 *     Italy                                                                     *
 *********************************************************************************/
-#ifndef CINO_TETRAHEDRON_UTILS_H
-#define CINO_TETRAHEDRON_UTILS_H
+#ifndef CINO_AFM_H
+#define CINO_AFM_H
 
-#include <cinolib/geometry/vec_mat.h>
+#ifdef CINOLIB_USES_CGAL
+
+#include <cinolib/meshes/drawable_trimesh.h>
+#include <cinolib/AFM/rationals.h>
+#include <cinolib/profiler.h>
 
 namespace cinolib
 {
 
+/* Reference implementation of the article
+ *
+ * Advancing Front Mapping
+ * Marco Livesu
+ * arXiv:2305.11552
+ *
+ * Example of usage:
+ *
+ *     AFM_data data;
+ *     data.m0 = input_trimesh;
+ *     data.target_domain = CIRCLE | SQUARE | STAR
+ *     AFM(data);
+ *
+ * For interactive use, call AFM_init(data) first and then call AFM(data), using data.stop to force the execution
+ * of a finite number of steps. See the dedicated example (#47) in cinolib/examples.
+*/
+
+struct AFM_data
+{
+    DrawableTrimesh<>   m0;                     // input mesh. May be refined during map generation
+    DrawableTrimesh<>   m1;                     // output mesh of the target domain, same connectivity as m0
+    std::deque<uint>    front;                  // serialized front edges
+    int                 target_domain = CIRCLE; // CIRCLE, SQUARE, STAR
+    uint                origin;                 // id of the vertex selected as the origin of the front
+    bool                initialized = false;    // true if m1 has already been initialized
+    std::vector<CGAL_Q> exact_coords;           // rational coordinates for exact computation
+
+    // profiling / debugging / step-by-step execution
+    Profiler p;
+    bool     enable_snap_rounding = true;  // snap to float anytime this is possible (i.e., no flips generated)
+    bool     enable_sanity_checks = false; // toggle additional assertions for careful debug
+    bool     step_by_step         = false; // toggle step-by-step execution
+    int      step_size            = 1;     // moves for each step
+    bool     stop                 = false; // if set to true, stops after current iteration (for debug)
+    bool     refinement_enabled   = true;  // permit input mesh refinement to unlock deadlocks with convexification and concavification
+    bool     abort_if_too_slow    = true;  // stop execution if a moves takes more than max_time_per_step
+    double   max_time_per_step    = 2;     // seconds
+
+    // statistics / colors
+    uint  tris_in;
+    uint  tris_out;
+    float mesh_growth = 0;
+    uint  moves_tot = 0;
+    uint  moves_split = 0;
+    uint  moves_flip = 0;
+    uint  convexifications = 0;
+    uint  concavifications = 0;
+    bool  converged = false;
+    bool  timeout = false;
+    float runtime = 0;
+    uint  flips_exact  = 0;
+    uint  flips_double = 0;
+    uint  snap_roundings_failed = 0;
+    Color conquered_color = Color(193.f/255.f,238.f/255.f,1.f);
+};
+
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 CINO_INLINE
-void tet_barycentric_coords(const vec3d & A,
-                            const vec3d & B,
-                            const vec3d & C,
-                            const vec3d & D,
-                            const vec3d & P,
-                            double wgts[]);
+void AFM(AFM_data & data);
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-// radius of the biggest inscribed sphere
 CINO_INLINE
-double tetrahedron_inradius(const vec3d & A,
-                            const vec3d & B,
-                            const vec3d & C,
-                            const vec3d & D);
+void AFM_init(AFM_data & data);
 
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// radius of the smallest outscribed sphere
-CINO_INLINE
-double tetrahedron_outradius(const vec3d & A,
-                             const vec3d & B,
-                             const vec3d & C,
-                             const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// normalized ratio between in and out radii
-CINO_INLINE
-double tetrahedron_radius_ratio(const vec3d & A,
-                                const vec3d & B,
-                                const vec3d & C,
-                                const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// center of the smallest outscribed sphere
-CINO_INLINE
-vec3d tetrahedron_circumcenter(const vec3d & A,
-                               const vec3d & B,
-                               const vec3d & C,
-                               const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// Given a point P and a tetrahedron ABCD, finds the point in ABCD that
-// is closest to P. This code was taken directly from Ericson's seminal
-// book "Real Time Collision Detection", Section 5.1.6
-//
-CINO_INLINE
-vec3d tetrahedron_closest_point(const vec3d & P,
-                                const vec3d & A,
-                                const vec3d & B,
-                                const vec3d & C,
-                                const vec3d & D);
 }
 
 #ifndef  CINO_STATIC_LIB
-#include "tetrahedron_utils.cpp"
+#include "AFM.cpp"
 #endif
 
-#endif // CINO_TETRAHEDRON_UTILS_H
+#endif // CINOLIB_USES_CGAL
+#endif // CINO_AFM_H

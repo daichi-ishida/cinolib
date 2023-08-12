@@ -1,6 +1,6 @@
 /********************************************************************************
 *  This file is part of CinoLib                                                 *
-*  Copyright(C) 2016: Marco Livesu                                              *
+*  Copyright(C) 2023: Marco Livesu                                              *
 *                                                                               *
 *  The MIT License                                                              *
 *                                                                               *
@@ -33,76 +33,44 @@
 *     16149 Genoa,                                                              *
 *     Italy                                                                     *
 *********************************************************************************/
-#ifndef CINO_TETRAHEDRON_UTILS_H
-#define CINO_TETRAHEDRON_UTILS_H
-
-#include <cinolib/geometry/vec_mat.h>
+#include <cinolib/AFM/snap_rounding.h>
+#include <cinolib/AFM/flip_checks.h>
 
 namespace cinolib
 {
 
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 CINO_INLINE
-void tet_barycentric_coords(const vec3d & A,
-                            const vec3d & B,
-                            const vec3d & C,
-                            const vec3d & D,
-                            const vec3d & P,
-                            double wgts[]);
+bool snap_rounding(AFM_data & data, const uint vid)
+{
+    if(!data.enable_snap_rounding) return true;
 
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    // keep a safe copy of the exact coordinates
+    CGAL_Q tmp[3];
+    copy(&data.exact_coords[3*vid],tmp);
 
-// radius of the biggest inscribed sphere
-CINO_INLINE
-double tetrahedron_inradius(const vec3d & A,
-                            const vec3d & B,
-                            const vec3d & C,
-                            const vec3d & D);
+    // round them to the closest double
+    data.exact_coords[3*vid+0] = CGAL::to_double(tmp[0]);
+    data.exact_coords[3*vid+1] = CGAL::to_double(tmp[1]);
+    data.exact_coords[3*vid+2] = CGAL::to_double(tmp[2]);
 
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    // check for flips
+    bool flips = false;
+    for(uint pid : data.m1.adj_v2p(vid))
+    {
+        if(flipped(data,pid))
+        {
+            flips = true;
+            break;
+        }
+    }
 
-// radius of the smallest outscribed sphere
-CINO_INLINE
-double tetrahedron_outradius(const vec3d & A,
-                             const vec3d & B,
-                             const vec3d & C,
-                             const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// normalized ratio between in and out radii
-CINO_INLINE
-double tetrahedron_radius_ratio(const vec3d & A,
-                                const vec3d & B,
-                                const vec3d & C,
-                                const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// center of the smallest outscribed sphere
-CINO_INLINE
-vec3d tetrahedron_circumcenter(const vec3d & A,
-                               const vec3d & B,
-                               const vec3d & C,
-                               const vec3d & D);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-// Given a point P and a tetrahedron ABCD, finds the point in ABCD that
-// is closest to P. This code was taken directly from Ericson's seminal
-// book "Real Time Collision Detection", Section 5.1.6
-//
-CINO_INLINE
-vec3d tetrahedron_closest_point(const vec3d & P,
-                                const vec3d & A,
-                                const vec3d & B,
-                                const vec3d & C,
-                                const vec3d & D);
+    if(flips) // rollback
+    {
+        copy(tmp, &data.exact_coords[3*vid]);
+        ++data.snap_roundings_failed;
+        return false;
+    }
+    return true;
 }
 
-#ifndef  CINO_STATIC_LIB
-#include "tetrahedron_utils.cpp"
-#endif
-
-#endif // CINO_TETRAHEDRON_UTILS_H
+}

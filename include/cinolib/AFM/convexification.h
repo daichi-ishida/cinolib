@@ -1,6 +1,6 @@
 /********************************************************************************
 *  This file is part of CinoLib                                                 *
-*  Copyright(C) 2016: Marco Livesu                                              *
+*  Copyright(C) 2023: Marco Livesu                                              *
 *                                                                               *
 *  The MIT License                                                              *
 *                                                                               *
@@ -33,89 +33,57 @@
 *     16149 Genoa,                                                              *
 *     Italy                                                                     *
 *********************************************************************************/
-#include <cinolib/linear_map.h>
-#include <cinolib/tangent_space.h>
+#ifndef CINO_AFM_CONVEXIFICATION_H
+#define CINO_AFM_CONVEXIFICATION_H
+
+#include <cinolib/AFM/AFM.h>
 
 namespace cinolib
 {
 
 CINO_INLINE
-void linear_map(const double u0[2],
-                const double v0[2],
-                const double u1[2],
-                const double v1[2],
-                      double T[2][2])
-{
-    // compute the transformation as T = |u1 v1| * |u0 v0|^-1
+void convexify_front(AFM_data & data,
+                     const uint v0,
+                     const uint v1,
+                     const uint v2);
 
-    double uv0[2][2] = {{u0[0],v0[0]}, {u0[1],v0[1]}};
-    double uv1[2][2] = {{u1[0],v1[0]}, {u1[1],v1[1]}};
-    double inv[2][2];
-    mat_inverse<2,double>(uv0,inv);
-    mat_times<2,2,2,double>(uv1,inv,T);
-}
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+// checks whether the positive half space of the edge of pid that is opposite
+// to vid contains the point p. This is relevant to "push" vertex
+// vid towards the origin, in order to convexify a concave portion of the front
+// and unlock an advancemente move via edge flip
+//
+CINO_INLINE
+bool triangle_is_blocking(AFM_data     & data,
+                          const uint     vid,
+                          const uint     pid,
+                          const CGAL_Q * p);
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 CINO_INLINE
-void linear_map(const vec2d & u0,
-                const vec2d & v0,
-                const vec2d & u1,
-                const vec2d & v1,
-                      mat2d & T)
-{
-    // compute the transformation as T = |u1 v1| * |u0 v0|^-1
-
-    mat2d uv0({u0[0],v0[0], u0[1],v0[1]});
-    mat2d uv1({u1[0],v1[0], u1[1],v1[1]});
-
-    T = uv1 * uv0.inverse();
-}
+uint vertex_locks(AFM_data         & data,
+                  const uint          vid,
+                  std::vector<uint> & locks,
+                  const CGAL_Q      * p);
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 CINO_INLINE
-void linear_map(const vec3d & a0,
-                const vec3d & a1,
-                const vec3d & a2,
-                const vec3d & b0,
-                const vec3d & b1,
-                const vec3d & b2,
-                      mat2d & T)
-{
-    // compute 2D coordinates in tangent space
-    vec2d A0,A1,A2;
-    vec2d B0,B1,B2;
-    tangent_space_2d_coords(a0,a1,a2,A0,A1,A2);
-    tangent_space_2d_coords(b0,b1,b2,B0,B1,B2);
-
-    // compute 2D frames in tangent space
-    vec2d u0 = A1 - A0;
-    vec2d v0 = A2 - A0;
-    vec2d u1 = B1 - B0;
-    vec2d v1 = B2 - B0;
-
-    // solve for the mapping
-    linear_map(u0,v0,u1,v1,T);
-}
+void vertex_unlock(AFM_data & data,
+                   const uint     vid,
+                   const CGAL_Q * p);
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-// Computes the linear component of the affine map that connects tetrahedra (a0,a1,a2,a3) and (b0,b1,b2,b3)
 CINO_INLINE
-void linear_map(const vec3d & a0,
-                const vec3d & a1,
-                const vec3d & a2,
-                const vec3d & a3,
-                const vec3d & b0,
-                const vec3d & b1,
-                const vec3d & b2,
-                const vec3d & b3,
-                      mat3d & T)
-{
-    mat3d f0({a1-a0, a2-a0, a3-a0});
-    mat3d f1({b1-b0, b2-b0, b3-b0});
-    T = f1*f0.inverse();
-}
+void update_vertex_pos(AFM_data & data, const uint vid, const CGAL_Q * p);
 
 }
+
+#ifndef  CINO_STATIC_LIB
+#include "convexification.cpp"
+#endif
+
+#endif // CINO_AFM_CONVEXIFICATION_H
